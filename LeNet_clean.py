@@ -6,11 +6,12 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, Activation,MaxPooling2D,Dropout,Flatten
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator
-import numpy as np
+#import numpy as np
 from keras import optimizers
 import os
 from keras import backend as K
-import PIL
+from PIL import Image
+import sys
 
 def recall(y_true, y_pred):
     """Recall metric.
@@ -51,7 +52,7 @@ def inference(csv_file):
     df.columns = ['0','1']
     datagen=ImageDataGenerator() 
     valid_generator = datagen.flow_from_dataframe(dataframe=df, directory="data/", x_col="0",y_col="1",
-                                                class_mode="raw", target_size=(320,180), batch_size=32)
+                                                class_mode="raw", target_size=(320,180), batch_size=30)
     
     loaded_model.compile(optimizers.rmsprop(lr=0.0001),loss="sparse_categorical_crossentropy", 
               metrics=["accuracy", precision, recall])
@@ -60,12 +61,9 @@ def inference(csv_file):
     #... use the model to do inference
     STEP_SIZE_VALID = valid_generator.n//valid_generator.batch_size
     score = loaded_model.evaluate_generator(generator = valid_generator, steps = STEP_SIZE_VALID,
-                                     use_multiprocessing = False, verbose = 0 )
+                                     use_multiprocessing = False, verbose = 1 )
     
-    print('\n answer:\n')
-    print('Test loss:', score[0] )
-    print('Test accuracy:', score[1] )
-    print('\n')
+    
     # accuracy
     accuracy_output = score[1]
     
@@ -80,6 +78,9 @@ def inference(csv_file):
 
 
 
-
 if __name__ == '__main__':
-    inference('data/test_free_throws.csv')
+    #input_file = sys.argv[1] 
+    input_file = 'data/dunk_layup_test_data.csv'
+    ans = inference(input_file)
+    print('done\n')
+    print(ans)
